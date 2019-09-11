@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+
+set -ex
+
+case $(uname -rs) in
+  *Darwin*)
+    BIN_REMOTE=plan-rss-osx
+    BIN_LOCAL=plan-rss
+    ;;
+  *CYGWIN*|*MINGW*)
+    BIN_REMOTE=plan-rss.exe
+    BIN_LOCAL=plan-rss.exe
+    ;;
+  *Microsoft*|*)
+    BIN_REMOTE=plan-rss-linux
+    BIN_LOCAL=plan-rss
+    ;;
+esac
+
+mkdir -p bin
+curl --silent https://api.github.com/repos/iamFIREcracker/plan-rss/releases/latest \
+       | grep "browser_download_url.*$BIN_REMOTE" \
+       | cut -d : -f 2,3 \
+       | tr -d \" \
+       | xargs -I {} curl --location {} --output bin/$BIN_LOCAL
+chmod +x bin/$BIN_LOCAL
