@@ -97,6 +97,12 @@
 (defun day-header-date (s)
   (second (split-sequence:split-sequence #\Space s)))
 
+(defun day-header-date-rfc2822 (s)
+  (let* ((parts (split-sequence:split-sequence #\- s))
+         (parts (mapcar #'parse-integer parts))
+         (d (dt:make-date (first parts) (second parts) (third parts))))
+    (dt:rfc-2822 (dt:day+ d 1))))
+
 ;;; Stream --------------------------------------------------------------------
 
 (defvar *last-line* NIL "Last, read, line")
@@ -140,7 +146,8 @@
       :for day = (read-plan-day)
       :for date = (and day (day-header-date (plan-day-date day)))
       :while day
-      :do (xml-emitter:with-rss-item (date :link *link*)
+      :do (xml-emitter:with-rss-item (date :link *link*
+                                           :pubDate (day-header-date-rfc2822 date))
             (xml-emitter:simple-tag "guid" (format NIL "~a#~a" *link* date)
                                      '(("isPermaLink" "false")))
             (xml-emitter:with-simple-tag ("description")
