@@ -127,26 +127,26 @@
 ;;; Main ----------------------------------------------------------------------
 
 (defun process-input ()
-  (xml-emitter::with-rss2 (*standard-output* :encoding "utf-8" :attrs '(("xmlns:atom" "http://www.w3.org/2005/Atom")
-                                                                        ("version" "2.0")))
-    (xml-emitter::with-rss-channel-header (*title* *link* :description (read-channel-description)
-                                                          :generator *generator*
-                                                          :image *image*)
-      (xml-emitter::empty-tag "atom:link" `(("href" ,*atom-link-self*)
-                                            ("rel" "self")
-                                            ("type" "application/rss+xml"))))
+  (xml-emitter:with-rss2 (*standard-output* :encoding "utf-8" :attrs '(("xmlns:atom" "http://www.w3.org/2005/Atom")
+                                                                       ("version" "2.0")))
+    (xml-emitter:with-rss-channel-header (*title* *link* :description (read-channel-description)
+                                                         :generator *generator*
+                                                         :image *image*)
+      (when *atom-link-self*
+        (xml-emitter:empty-tag "atom:link" `(("href" ,*atom-link-self*)
+                                             ("rel" "self")
+                                             ("type" "application/rss+xml")))))
     (loop
       :for day = (read-plan-day)
       :for date = (and day (day-header-date (plan-day-date day)))
       :while day
-      :do (xml-emitter:with-rss-item (date :link *link*
-                                           :pubDate "XXX")
-            (xml-emitter::simple-tag "guid" (format NIL "~a#~a" *link* date)
+      :do (xml-emitter:with-rss-item (date :link *link*)
+            (xml-emitter:simple-tag "guid" (format NIL "~a#~a" *link* date)
                                      '(("isPermaLink" "false")))
-            (xml-emitter::with-simple-tag ("description")
-              (xml-emitter::xml-as-is "<![CDATA[<pre>")
-              (xml-emitter::xml-out (plan-day-content day))
-              (xml-emitter::xml-as-is "</pre>]]>"))))))
+            (xml-emitter:with-simple-tag ("description")
+              (xml-emitter:xml-as-is "<![CDATA[<pre>")
+              (xml-emitter:xml-out (plan-day-content day))
+              (xml-emitter:xml-as-is "</pre>]]>"))))))
 
 (defun toplevel()
   (parse-opts)
