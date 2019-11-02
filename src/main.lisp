@@ -1,6 +1,13 @@
 (in-package #:plan-rss)
 
+;;; Options -------------------------------------------------------------------
+
 (defvar *version* NIL "Application version")
+(defvar *title* NIL "Feed's <title>")
+(defvar *link* NIL "Feed's <link>")
+(defvar *generator* NIL "Feed's <generator>")
+(defvar *image* NIL "Feed's image <url>")
+(defvar *atom-link-self* NIL "Feed's <atom:link rel=self>")
 
 (opts:define-opts
   (:name :help
@@ -11,10 +18,30 @@
          :description "print the version and exit"
          :short #\v
          :long "version")
-  (:name :debug
-         :description "parse the RC file and exit"
-         :short #\d
-         :long "debug"))
+  (:name :title
+         :description "use TITLE as feed's <title>"
+         :short #\t
+         :long "title"
+         :arg-parser #'identity
+         :meta-var "TITLE")
+  (:name :link
+         :description "use LINK as feed's <link>"
+         :short #\l
+         :long "link"
+         :arg-parser #'identity
+         :meta-var "LINK")
+  (:name :image
+         :description "use IMAGE as feed's image <url>"
+         :short #\m
+         :long "image"
+         :arg-parser #'identity
+         :meta-var "IMAGE")
+  (:name :atom-link-self
+         :description "use SELF as feed's atom:link with rel=self"
+         :short #\s
+         :long "atom-link-self"
+         :arg-parser #'identity
+         :meta-var "SELF"))
 
 (defun parse-opts ()
   (multiple-value-bind (options)
@@ -22,55 +49,121 @@
         (opts:get-opts)
       (opts:unknown-option (condition)
         (format t "~s option is unknown!~%" (opts:option condition))
+        (opts:exit 1))
+      (opts:missing-required-option (condition)
+        (format t "~s option is required!~%" condition)
         (opts:exit 1)))
     (if (getf options :help)
       (progn
         (opts:describe
-          :prefix "Guess commands to run from stdin, and print them to stdout."
+          :prefix "Reads a .plan file from stdin, and prints to stdout a feed with all the parsed entries"
           :args "[keywords]")
         (opts:exit)))
     (if (getf options :version)
       (progn
         (format T "~a~%" *version*)
-        (opts:exit)))))
+        (opts:exit)))
+    ; required arguments
+    (setf *title* (getf options :title)
+          *link* (getf options :link)
+          *generator* (format T "plan-rss ~a~%" *version*))
+    ; optional ones
+    (if (getf options :image)
+      (setf *image* (getf options :image)))
+    (if (getf options :atom-link-self)
+      (setf *atom-link-self* (getf options :atom-link-self)))))
 
-(defun guess (line &optional (guessers (reverse *guessers*)))
+;;; Utils ---------------------------------------------------------------------
+
+(defvar *day-header-scanner* (ppcre:create-scanner "^# [0-9]{4}-[0-9]{2}-[0-9]{2}"))
+
+(defun day-header-p (s)
+  (ppcre:scan *day-header-scanner* s))
+
+(defun eof-p (s)
+  (eq s :eof))
+
+(defun day-header-date (s)
+  (second (split-sequence:split-sequence #\Space s)))
+
+;;; Stream --------------------------------------------------------------------
+
+(defvar *last-line* NIL "Last, read, line")
+
+(defun read-next ()
+  (setf *last-line* (read-line NIL NIL :eof)))
+
+(defun read-until (stop-p)
   (loop
-    :for fn :in guessers
-    :for command = (funcall fn line)
-    :when (stringp command) :collect command
-    :when (consp command) :append command))
+    :for line = (read-next)
+    :until (funcall stop-p line)
+    :collect line))
+
+(defun read-until-day-header ()
+  (read-until (lambda (s) (or (eof-p s)
+                              (day-header-p s)))))
+
+(defun read-channel-description ()
+  (format NIL "~{~&~A~}" (read-until-day-header)))
+
+(defstruct plan-day
+  date content)
+
+(defun read-plan-day ()
+  (unless (eof-p *last-line*)
+    (make-plan-day :date *last-line* :content (read-channel-description))))
+
+;;; Main ----------------------------------------------------------------------
 
 (defun process-input ()
-  (loop
-    :with seen = (make-hash-table :test 'equal)
-    :for line = (read-line NIL NIL :eof)
-    :until (eq line :eof)
-    :do (loop
-          :for command :in (guess line)
-          :when (and command (not (gethash command seen)))
-          :do (progn
-                (setf (gethash command seen) T)
-                (format T "~a~%" command)))))
+  (xml-emitter::with-rss2 (*standard-output* :encoding "utf-8" :attrs '(("xmlns:atom" "http://www.w3.org/2005/Atom")
+                                                                        ("version" "2.0")))
+    (xml-emitter::with-rss-channel-header (*title* *link* :description (read-channel-description)
+                                                          :generator *generator*
+                                                          :image *image*)
+      (xml-emitter::empty-tag "atom:link" `(("href" ,*atom-link-self*)
+                                            ("rel" "self")
+                                            ("type" "application/rss+xml"))))
+    (loop
+      :for day = (read-plan-day)
+      :for date = (and day (day-header-date (plan-day-date day)))
+      :while day
+      :do (xml-emitter:with-rss-item (date :link *link*
+                                           :pubDate "XXX")
+            (xml-emitter::simple-tag "guid" (format NIL "~a#~a" *link* date)
+                                     '(("isPermaLink" "false")))
+            (xml-emitter::with-simple-tag ("description")
+              (xml-emitter::xml-as-is "<![CDATA[<pre>")
+              (xml-emitter::xml-out (plan-day-content day))
+              (xml-emitter::xml-as-is "</pre>]]>"))))))
 
-(defun toplevel ()
-  (parse-opts)
-  (process-input))
+;;; Tests ---------------------------------------------------------------------
 
-(in-package :xml-emitter)
-(with-rss2 (*standard-output* :encoding "utf-8")
-  (rss-channel-header "Peter's Blog" "http://peter.blogspot.com/"
-          :description "A place where I sometimes post stuff"
-          :image "myhead.jpg")
-  (rss-item "Breaking news!"
-      :link "http://google.com/"
-      :description "The biggest problem with the DO-ODD macro above is that it puts BODY
-into LOOP. Code from the user of the macro should never be run in the
-environment established by the LOOP macro. LOOP does a number of
-things behind your back, and it's hard to disable them. For example,
-what happens here?>"
-      :category "Lisp"
-      :pubDate "Sun, 29 Sep 2002 19:59:01 GMT")
-  (rss-item "RSS emitter created"
-      :description "An RSS emitter has been released! Hahahahaha!"
-      :link "http://gmail.google.com/"))
+#+NIL
+(setf *version* "0.0.1"
+      *title* "Matteo Landi's blog"
+      *link* "https://matteolandi.net/.plan"
+      *generator* (format NIL "plan-rss ~a" *version*)
+      *image* "https://matteolandi.net/static/avatar-144.jpg"
+      *atom-link-self* "https://matteolandi.net/plan.xml")
+
+#+NIL
+(defun fake-input-stream ()
+  (make-string-input-stream "This is my log ...
+
+When I accomplish something, I write a * line that day.
+
+Whenever a bug / missing feature / idea is mentioned during the day and I don't fix it, I make a note of it and mark it with ?.  Some things get noted many times before they get fixed.
+
+Occasionally I go back through the old notes and mark with a + the things I have since fixed, and with a ~ the things I have since lost interest in.
+
+--- Matteo Landi
+
+# 2019-11-01
+* xml-emitter: Add support for guid isPermaLink=false (https://github.com/VitoVan/xml-emitter/pull/3)
+* xml-emitter: Add support for atom:link with rel=\"self\" (https://github.com/VitoVan/xml-emitter/pull/4)
+
+# 2019-10-30
+Finally A/I came back online, and I was finally able to create a request for a mailing list (to use it with the other college friends).  Anyway, the request has been created, so hopefully over the following days we will hear back from them...stay tuned!
+
+"))
