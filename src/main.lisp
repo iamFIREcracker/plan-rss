@@ -137,6 +137,10 @@
               (xml-emitter::xml-out (plan-day-content day))
               (xml-emitter::xml-as-is "</pre>]]>"))))))
 
+(defun toplevel()
+  (parse-opts)
+  (process-input))
+
 ;;; Tests ---------------------------------------------------------------------
 
 #+NIL
