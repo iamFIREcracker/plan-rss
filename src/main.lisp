@@ -20,12 +20,14 @@
          :long "version")
   (:name :title
          :description "use TITLE as feed's <title>"
+         :required T
          :short #\t
          :long "title"
          :arg-parser #'identity
          :meta-var "TITLE")
   (:name :link
          :description "use LINK as feed's <link>"
+         :required T
          :short #\l
          :long "link"
          :arg-parser #'identity
@@ -45,14 +47,23 @@
 
 (defun parse-opts ()
   (multiple-value-bind (options)
-    (handler-case
-        (opts:get-opts)
-      (opts:unknown-option (condition)
-        (format t "~s option is unknown!~%" (opts:option condition))
-        (opts:exit 1))
-      (opts:missing-required-option (condition)
-        (format t "~s option is required!~%" condition)
-        (opts:exit 1)))
+      (handler-case
+          (handler-bind ((opts:missing-required-option (lambda (condition)
+                                                         (if (or (member "-h" argv :test #'equal)
+                                                                 (member "--help" argv :test #'equal)
+                                                                 (member "-v" argv :test #'equal)
+                                                                 (member "--version" argv :test #'equal))
+                                                           (invoke-restart 'opts:skip-option)
+                                                           (progn
+                                                             (format t "~a~%" condition)
+                                                             (opts:exit 1))))))
+              (opts:get-opts argv))
+        (opts:unknown-option (condition)
+          (format t "~a~%" condition)
+          (opts:exit 1))
+        (opts:missing-arg (condition)
+          (format t "~a~%" condition)
+          (opts:exit 1)))
     (if (getf options :help)
       (progn
         (opts:describe
@@ -66,7 +77,7 @@
     ; required arguments
     (setf *title* (getf options :title)
           *link* (getf options :link)
-          *generator* (format T "plan-rss ~a~%" *version*))
+          *generator* (format NIL "plan-rss ~a~%" *version*))
     ; optional ones
     (if (getf options :image)
       (setf *image* (getf options :image)))
