@@ -12,7 +12,6 @@ matrix:
         - DEST=plan-rss-osx
     - os: windows
       language: shell
-      filter_secretes: false # goddammit, windows!
       env:
         - PATH=$PATH:/tmp/roswell
         - DEST=plan-rss.exe
@@ -38,10 +37,7 @@ script:
   - make binary-ros
 
 before_deploy:
-  - |
-    if [ "$TRAVIS_OS_NAME" != "windows" ]; then
-      mv bin/plan-rss bin/$DEST
-    fi
+  - mv bin/plan-rss bin/$DEST
 
 deploy:
   provider: releases
