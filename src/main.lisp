@@ -205,13 +205,5 @@
 ;;; REPL  ---------------------------------------------------------------------
 
 #+NIL
-(setf *version* "0.0.1"
-      *title* "Matteo Landi's blog"
-      *link* "https://matteolandi.net/.plan"
-      *generator* (format NIL "plan-rss ~a" *version*)
-      *image* "https://matteolandi.net/static/avatar-144.jpg"
-      *atom-link-self* "https://matteolandi.net/plan.xml")
-
-#+NIL
 (defun fake-input-stream ()
   (open ".plan.example" :if-does-not-exist nil))
