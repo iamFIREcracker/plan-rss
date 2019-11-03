@@ -1,6 +1,6 @@
 (in-package #:plan-rss)
 
-;;; Vendor
+;;; Vendor --------------------------------------------------------------------
 
 
 (defmacro with-rss-channel-header ((title link &key description
@@ -88,7 +88,7 @@
          :arg-parser #'identity
          :meta-var "SELF"))
 
-(defun parse-opts ()
+(defun parse-opts (&optional (argv (opts:argv)))
   (multiple-value-bind (options)
       (handler-case
           (handler-bind ((opts:missing-required-option (lambda (condition)
@@ -100,7 +100,7 @@
                                                            (progn
                                                              (format t "~a~%" condition)
                                                              (opts:exit 1))))))
-              (opts:get-opts argv))
+            (opts:get-opts argv))
         (opts:unknown-option (condition)
           (format t "~a~%" condition)
           (opts:exit 1))
@@ -202,7 +202,7 @@
   (parse-opts)
   (process-input))
 
-;;; Tests ---------------------------------------------------------------------
+;;; REPL ----------------------------------------------------------------------
 
 #+NIL
 (setf *version* "0.0.1"

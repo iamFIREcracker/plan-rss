@@ -5,6 +5,7 @@
 Unreleased
 
 - version not properly taking into account commits since last tag
+- travis-ci built binaries are crashing
 
 v0.0.2 (2019-11-03)
 
