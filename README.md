@@ -2,7 +2,7 @@
 
 # Changelog
 
-Unreleased
+v0.0.3 (2019-11-04)
 
 - version not properly taking into account commits since last tag
 - travis-ci built binaries are crashing
