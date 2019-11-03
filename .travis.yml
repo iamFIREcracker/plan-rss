@@ -48,5 +48,4 @@ deploy:
   file: bin/$DEST
   on:
     repo: iamFIREcracker/plan-rss
-    all_branches: true
-    # tags: true
+    tags: true
