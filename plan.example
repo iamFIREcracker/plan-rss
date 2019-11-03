@@ -1,0 +1,191 @@
+This is my log ...
+
+When I accomplish something, I write a * line that day.
+
+Whenever a bug / missing feature / idea is mentioned during the day and I don't fix it, I make a note of it and mark it with ?.  Some things get noted many times before they get fixed.
+
+Occasionally I go back through the old notes and mark with a + the things I have since fixed, and with a ~ the things I have since lost interest in.
+
+--- Matteo Landi
+
+# 2019-11-03
+Mac OS builds on Travis-CI were not working lately, and after some quick Googling around I stumbled upon this: https://github.com/travis-ci/travis-ci/issues/10482
+
+The following indeed seems to fix the problem:
+
+```
+before_install:
+  # 2019-10-30: Homebrew/brew.rb:23:in `require_relative': ...
+  # ... unexpected keyword_rescue, expecting keyword_end
+  # https://discourse.brew.sh/t/missing-file-homebrew-dead/5657
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then
+      set -x &&
+      brew update-reset &&
+      if ! brew install gsl; then
+        cd "$(brew --repo)" && git add . && git fetch &&
+        git reset --hard origin/master;
+      fi;
+      set +x;
+    fi
+```
+
+But what the hell should I install `gsl`?  Let's try something else (`brew update-reset` only):
+
+```
+before_install:
+  # 2019-10-30: Homebrew/brew.rb:23:in `require_relative': ...
+  # ... unexpected keyword_rescue, expecting keyword_end
+  # https://discourse.brew.sh/t/missing-file-homebrew-dead/5657
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then
+      set -x &&
+      brew update-reset &&
+      set +x;
+    fi
+```
+
+This one works too, so I guess I am going to stick with this for now!
+
+--- 
+
+Setting up Travis-CI deployment keys can be as easy as running `travis setup releases`, or way more messier (that's the price you have to pay if you don't to share your username/password with `travis`).
+
+1) Add a new Oauth token: https://github.com/settings/tokens, and copy it -- only the `public_repo` scope seems to be required to upload assets
+2) Run `cb | travis encrypt` (if you run it from the specific repo itself, it will automatically guess the Travis-CI space)
+3) Copy the secured token inside your .travis.yml file
+
+    deploy:
+      provider: releases
+      api_key:
+        secure: XXX_SECURE_XXX
+      skip_cleanup: true
+      file: bin/$DEST
+      on:
+        repo: iamFIREcracker/plan-rss
+        tags: true
+
+Also, when *all* conditions specified in the `on:` section are met, your build will deploy.  Possible options:
+
+- `repo`: in the form `owner_name/repo_name`.
+- `branch`: name of the branch (or `all_branches: true`)
+- `tags` -- to have tag-based deploys
+- other..
+
+Useful links:
+
+- https://docs.travis-ci.com/user/deployment/releases/
+- https://stackoverflow.com/questions/25302518/travis-ci-setup-releases-with-github-token
+- https://github.com/travis-ci/travis-ci/issues/2982
+- https://github.com/travis-ci/docs-travis-ci-com/pull/1383/files
+
+---
+
+* plan-rss: v0.0.1
+* plan-rss: fix Windows build issue
+* plan-rss: remove trailing new-line from <generator>
+* plan-rss: v0.0.2
+* plan-rss: --version not working for dev version (i.e. not taking into account commits since last tag)
+* plan-rss: travis ci binaries crashing
+
+# 2019-11-02
+
+Update on my journery to a Common Lisp version of plan-rss
+
+Figured out a way to wrap "description" values inside CDATA/pre elements, but I don't think I am 100% satisfied by the solution (reason why I haven't submitted a MR yet).
+
+So basically I added a new key argument to RSS-ITEM, `descriptionWrapIn` a 2 elements LIST, which the function would use to wrap the content of "description" (the first element, before, and the second after).  Here is what I came up with:
+
+```
+(xml-emitter:rss-item date
+                      :link *link*
+                      :description (plan-day-content day)
+                      :descriptionWrapIn '("<![CDATA[<pre>" "</pre>]]>"))
+```
+
+Don't take me wrong, it works, but I just don't think it's good way of implementing it.
+
+Another approach would be to convert RSS-ITEM into a macro and let it accept a `BODY` that users can specify to further customize the content of the item.  Something along the lines of:
+
+```
+(xml-emitter:with-rss-item (date :link *link*)
+  (xml-emitter::with-simple-tag ("description")
+    (xml-emitter::xml-as-is "<![CDATA[<pre>")
+    (xml-emitter::xml-out (plan-day-content day))
+    (xml-emitter::xml-as-is "</pre>]]>"))))))
+```
+
+More verbose, but more flexible too; in fact, yesterday's MRs to add `isPermaLink` to `<guid>`, and to support Atom's link with rel=self would not be required anymore if RSS-ITEM and RSS-CHANNEL-HEADER were macros.
+
+Channel with Atom link:
+
+```
+    (xml-emitter::with-rss-channel-header (*title* *link* :description (read-channel-description)
+                                                          :generator *generator*
+                                                          :image *image*)
+      (xml-emitter::empty-tag "atom:link" `(("href" ,*atom-link-self*)
+                                            ("rel" "self")
+                                            ("type" "application/rss+xml"))))
+```
+
+Item with guid (isPermaLink=false) and description wrapped inside CDATA/pre blocks:
+
+```
+      :do (xml-emitter:with-rss-item (date :link *link*
+                                           :pubDate "XXX")
+            (xml-emitter::simple-tag "guid" (format NIL "~a#~a" *link* date)
+                                     '(("isPermaLink" "false")))
+            (xml-emitter::with-simple-tag ("description")
+              (xml-emitter::xml-as-is "<![CDATA[<pre>")
+              (xml-emitter::xml-out (plan-day-content day))
+              (xml-emitter::xml-as-is "</pre>]]>"))))))
+```
+
+---
+
+TIL: you can pretty print a Common Lisp condition with: `(format t "~a" cond)`
+
+---
+
+CL: unix-opts
+
+Required options seem to conflict with typical use of `--help` or `--version`: https://github.com/libre-man/unix-opts/issues/10
+
+Here is a possible workaround (adapted by another one found in the thread there):
+
+```
+(defun parse-opts (&optional (argv (opts:argv)))
+  (multiple-value-bind (options)
+      (handler-case
+          (handler-bind ((opts:missing-required-option (lambda (condition)
+                                                         (if (or (member "-h" argv :test #'equal)
+                                                                 (member "--help" argv :test #'equal)
+                                                                 (member "-v" argv :test #'equal)
+                                                                 (member "--version" argv :test #'equal))
+                                                           (invoke-restart 'opts:skip-option)
+                                                           (progn
+                                                             (format t "~a~%" condition)
+                                                             (opts:exit 1))))))
+              (opts:get-opts argv))
+        (opts:unknown-option (condition)
+          (format t "~a~%" condition)
+          (opts:exit 1))
+        (opts:missing-arg (condition)
+          (format t "~a~%" condition)
+          (opts:exit 1)))
+    (if (getf options :help)
+      ...
+```
+
+Important bits:
+
+- We do want to invoke the `OPTS:SKIP-OPTION` restart when any of the special options is set -- this way the library will use `NIL` and move on
+- HANDLER-BIND -- and not HANDLER-CASE -- needs to be used to handle `OPTS:MISSING-REQUIRED-OPTION`, especially if we want to call INVOKE-RESTART (with HANDLER-CASE the stack is already unwound, when the handler runs. Thus the restart established in the function is gone.)
+
+---
+
+* xml-emitter: RSS macros (https://github.com/VitoVan/xml-emitter/pull/5) (also cancelled the other MRs, as this one would now give more control to the user)
+* plan-rss: add pubDates (rfc2822)
+
+# 2019-11-01
+* xml-emitter: Add support for guid isPermaLink=false (https://github.com/VitoVan/xml-emitter/pull/3)
+* xml-emitter: Add support for atom:link with rel="self" (https://github.com/VitoVan/xml-emitter/pull/4)
+

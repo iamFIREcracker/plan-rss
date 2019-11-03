@@ -1,6 +1,6 @@
 (in-package #:plan-rss)
 
-;;; Vendor
+;;; Vendor --------------------------------------------------------------------
 
 
 (defmacro with-rss-channel-header ((title link &key description
@@ -202,7 +202,7 @@
   (parse-opts)
   (process-input))
 
-;;; Tests ---------------------------------------------------------------------
+;;; REPL  ---------------------------------------------------------------------
 
 #+NIL
 (setf *version* "0.0.1"
@@ -214,21 +214,4 @@
 
 #+NIL
 (defun fake-input-stream ()
-  (make-string-input-stream
-    (format NIL "~{~a~%~}" '("This is my log ..."
-                             ""
-                             "When I accomplish something, I write a * line that day.\n"
-                             ""
-                             "Whenever a bug / missing feature / idea is mentioned during the day and I don't fix it, I make a note of it and mark it with ?.  Some things get noted many times before they get fixed."
-                             ""
-                             "Occasionally I go back through the old notes and mark with a + the things I have since fixed, and with a ~ the things I have since lost interest in."
-                             ""
-                             "--- Matteo Landi"
-                             ""
-                             "# 2019-11-01"
-                             "* xml-emitter: Add support for guid isPermaLink=false (https://github.com/VitoVan/xml-emitter/pull/3)"
-                             "* xml-emitter: Add support for atom:link with rel=\"self\" (https://github.com/VitoVan/xml-emitter/pull/4)"
-                             ""
-                             "# 2019-10-30"
-                             "Finally A/I came back online, and I was finally able to create a request for a mailing list (to use it with the other college friends).  Anyway, the request has been created, so hopefully over the following days we will hear back from them...stay tuned!"
-                             ""))))
+  (open ".plan.example" :if-does-not-exist nil))
