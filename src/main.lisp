@@ -63,14 +63,14 @@
          :long "version")
   (:name :title
          :description "use TITLE as feed's <title>"
-         :required T
+         ; :required T
          :short #\t
          :long "title"
          :arg-parser #'identity
          :meta-var "TITLE")
   (:name :link
          :description "use LINK as feed's <link>"
-         :required T
+         ; :required T
          :short #\l
          :long "link"
          :arg-parser #'identity
