@@ -2,6 +2,10 @@
 
 # Changelog
 
+Unreleased
+
+- version not properly taking into account commits since last tag
+
 v0.0.2 (2019-11-03)
 
 - Remove trailing new-line from `<generator>`
