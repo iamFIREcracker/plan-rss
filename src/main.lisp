@@ -120,7 +120,7 @@
     ; required arguments
     (setf *title* (getf options :title)
           *link* (getf options :link)
-          *generator* (format NIL "plan-rss ~a~%" *version*))
+          *generator* (format NIL "plan-rss ~a" *version*))
     ; optional ones
     (if (getf options :image)
       (setf *image* (getf options :image)))
