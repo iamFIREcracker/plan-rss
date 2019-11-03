@@ -13,9 +13,11 @@
                                                           :output :string
                                                           :ignore-error-status T))
                                 (pending (parse-integer output :junk-allowed T)))
-                          (if (or (not pending) (zerop pending))
-                            (format NIL "~a" base-version)
-                            (format NIL "~a-r~a" base-version pending))))
+                           (format t "~a~%" base-version)
+                           (format t "~a~%" git-cmd)
+                           (if (or (not pending) (zerop pending))
+                             (format NIL "~a" base-version)
+                             (format NIL "~a-r~a" base-version pending))))
 
 (setf deploy:*status-output* nil)
 
