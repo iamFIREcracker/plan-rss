@@ -35,6 +35,7 @@ install:
 
 script:
   - make binary-ros
+  - bin/plan-rss --version
 
 before_deploy:
   - mv bin/plan-rss bin/$DEST
