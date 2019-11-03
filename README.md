@@ -2,9 +2,10 @@
 
 # Changelog
 
-v0.0.2
+v0.0.2 (2019-11-03)
 
 - Remove trailing new-line from `<generator>`
+- Windows exe missing from releases
 
 v0.0.1 (2019-11-03)
 
