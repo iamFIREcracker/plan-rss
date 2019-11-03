@@ -224,11 +224,11 @@ Occasionally I go back through the old notes and mark with a + the things I have
 
 --- Matteo Landi
 
-2019-11-01
+\# 2019-11-01
 * xml-emitter: Add support for guid isPermaLink=false (https://github.com/VitoVan/xml-emitter/pull/3)
 * xml-emitter: Add support for atom:link with rel=\"self\" (https://github.com/VitoVan/xml-emitter/pull/4)
 
-2019-10-30
+\# 2019-10-30
 Finally A/I came back online, and I was finally able to create a request for a mailing list (to use it with the other college friends).  Anyway, the request has been created, so hopefully over the following days we will hear back from them...stay tuned!
 
 "))
