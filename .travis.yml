@@ -17,6 +17,16 @@ matrix:
         - PATH=$PATH:/tmp/roswell
         - DEST=plan-rss.exe
 
+before_install:
+  # 2019-10-30: Homebrew/brew.rb:23:in `require_relative': ...
+  # ... unexpected keyword_rescue, expecting keyword_end
+  # https://discourse.brew.sh/t/missing-file-homebrew-dead/5657
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then
+      set -x &&
+      brew update-reset &&
+      set +x;
+    fi
+
 install:
   - curl -L https://gist.githubusercontent.com/iamFIREcracker/3564db5a24e296e087da49513d6cd00c/raw/4e356d00a98bb09c73c131c8c9db9f6fbd1cf018/roswell-install-for-ci.sh | sh
   - |
@@ -36,7 +46,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: oM5Vb6V/JfHMmd0xfoARMNV5hYFR75OI5ftaXZlkiJYyUbxwCLh9HarsTdNO/a3niLWVV/ZIazzayA9v+fiOdP03x3dbMLSqFo5Rou/yaa/3Ve83GbnS62r9q5NBvAi/r+4eYachnNUXwngCjeIXuD8mkkK9iGESbB9j3DX24ut2MCI+gz1K0aXwxq7vELX0EMlRdX7b1Mf8hcYugmPy5fOVS8VqYf/BalKPzzNHmiD1IO3qmPR35LZ4Re54jtjxWUUkPQwlA1m7VnpWSgkv6XgfTM716rOxXDoNRIwVTQpf11S9vVu//4BluAYZcMqqwFd4V+MQgl6OwGILQEzJnrcibNOL0/8eBO/rQ34Zk3Ae6ROmlzmOa+fIjkOUhPyF3vgGXcBXna8Ti1FmprA0Le02B4i+79h5n3BcE5pLK7P96FI15efLpVspTnoN+b7NWzKmAz96/YoZTI91l7q6veTo0z5XjlQ3U7gNWGUBeJiNBShDw/gi0lhhr56y+yCcgzpYoFo2DxqshFliBbXTxhNFBRkY0/j0Y94FlRk5+Bw8769Z5cTshGtLxNcAuNfKLvhEnSR+GF3QL6Wvo9JW1UmtJBgyndWCKX7L8AikeawfgUCHYAnylD5l/1XJPO5WhZbrMjiHhLz7lMc5+kfA6tM2bIQ5BRYgjhP18KQf2Fo=
+    secure: V5woEUHe2TN6pVMMWLcSWfdTn79cNoG2wtT8qChw/pV9+KAUcXNyXFPchqlnGaoWPNoMMdwehcTCJJz7MISnWO6DlepTf4KIpa42zOw6e1rwrHQ0yCGNT5KJrbfZznoYxU6M3qYXADhQKd4qft0haHiRQPUMYiTr+Qj/p1rfmCVtM+eK8yK/ASEH8yMJBhBLF/MHySLiM+zjm7LgGKtL6jT6vdcFFGH76zCaQgCunW1RXRO6If94PyGEUT13baL7tLqJntIfaQAOpozsO1NT2X8zzkekwyiuPdVZ9wQbHOsrh9bnf4PSMYcNUpmPOmNvn8rWxemsViEzd7wJTV0hL0xh2Rw/RWEbjpmiAYDFvAzeJxizk7fEExmHmjgOLJ8hY3RfpjyZronQDGwNjK47+Kw5AqA/If5xd72GMlFimm24MQmvatAEzT5aR/AteQXu2/lfcT/HxuczpQatugZNYxy1yGkKFyLSeItlhNoqWvMzNV5wh+oZCL+2wc+2vgeYEzZpuwHAfDFgerBrPljGmfjdr7ITx00QhTTUwbSXM/WqV7AVnFjobXvpMfZWCCoeEUp0IzaIR5v07+xe1qUdGxSBcR2AZJbMOFLecOm9tMxyCuEgHWscIhcQdaYVkXYqiuwj8YPHLEArRIK8eY0jsXRFmGzF435jg5Qpp63kbpc=
   skip_cleanup: true
   file: bin/$DEST
   on:
