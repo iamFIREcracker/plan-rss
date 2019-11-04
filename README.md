@@ -1,5 +1,10 @@
 # plan-rss
 
+# Todo
+
+- only process N most recent entries
+- disable `<pre>` wrapping
+
 # Changelog
 
 v0.0.3 (2019-11-04)
