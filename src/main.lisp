@@ -177,10 +177,10 @@
 
 (defun process-input ()
   (with-rss2 (*standard-output* :encoding "utf-8" :attrs '(("xmlns:atom" "http://www.w3.org/2005/Atom")
-                                                                       ("version" "2.0")))
+                                                           ("version" "2.0")))
     (with-rss-channel-header (*title* *link* :description (read-channel-description)
-                                                         :generator *generator*
-                                                         :image *image*)
+                                      :generator *generator*
+                                      :image *image*)
       (when *atom-link-self*
         (xml-emitter:empty-tag "atom:link" `(("href" ,*atom-link-self*)
                                              ("rel" "self")
@@ -190,9 +190,9 @@
       :for date = (and day (day-header-date (plan-day-date day)))
       :while day
       :do (with-rss-item (date :link *link*
-                                           :pubDate (day-header-date-rfc2822 date))
+                               :pubDate (day-header-date-rfc2822 date))
             (xml-emitter:simple-tag "guid" (format NIL "~a#~a" *link* date)
-                                     '(("isPermaLink" "false")))
+                                    '(("isPermaLink" "false")))
             (xml-emitter:with-simple-tag ("description")
               (xml-emitter:xml-as-is "<![CDATA[<pre>")
               (xml-emitter:xml-out (plan-day-content day))
