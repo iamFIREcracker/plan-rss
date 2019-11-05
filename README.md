@@ -3,12 +3,13 @@
 # Todo
 
 - only process N most recent entries
+- md5/sha256 as `<guid>` values
 
 # Changelog
 
-v0.0.4 (2019-11-04)
-
 - `--disable-pre-tag-wrapping` to stop wrapping text inside `<pre>` tags
+- remove support for `-m` and `-s` options (use `--image` and `--atom-self-link`
+  instead)
 
 v0.0.3 (2019-11-04)
 

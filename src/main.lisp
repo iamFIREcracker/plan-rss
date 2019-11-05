@@ -78,13 +78,11 @@
          :meta-var "LINK")
   (:name :image
          :description "use IMAGE as feed's image <url>"
-         :short #\m
          :long "image"
          :arg-parser #'identity
          :meta-var "IMAGE")
   (:name :atom-link-self
          :description "use SELF as feed's atom:link with rel=self"
-         :short #\s
          :long "atom-link-self"
          :arg-parser #'identity
          :meta-var "SELF")
