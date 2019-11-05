@@ -51,6 +51,7 @@
 (defvar *generator* NIL "Feed's <generator>")
 (defvar *image* NIL "Feed's image <url>")
 (defvar *atom-link-self* NIL "Feed's <atom:link rel=self>")
+(defvar *pre-wrap* T "Wrap text in <pre> tags")
 
 (opts:define-opts
   (:name :help
@@ -86,7 +87,10 @@
          :short #\s
          :long "atom-link-self"
          :arg-parser #'identity
-         :meta-var "SELF"))
+         :meta-var "SELF")
+  (:name :disable-pre-tag-wrapping
+         :description "disable wrapping text inside <pre> tags"
+         :long "disable-pre-tag-wrapping"))
 
 (defun parse-opts (&optional (argv (opts:argv)))
   (multiple-value-bind (options)
@@ -125,7 +129,9 @@
     (if (getf options :image)
       (setf *image* (getf options :image)))
     (if (getf options :atom-link-self)
-      (setf *atom-link-self* (getf options :atom-link-self)))))
+      (setf *atom-link-self* (getf options :atom-link-self)))
+    (if (getf options :disable-pre-tag-wrapping)
+      (setf *pre-wrap* NIL))))
 
 ;;; Utils ---------------------------------------------------------------------
 
@@ -194,9 +200,13 @@
             (xml-emitter:simple-tag "guid" (format NIL "~a#~a" *link* date)
                                     '(("isPermaLink" "false")))
             (xml-emitter:with-simple-tag ("description")
-              (xml-emitter:xml-as-is "<![CDATA[<pre>")
+              (xml-emitter:xml-as-is "<![CDATA[")
+              (when *pre-wrap*
+                (xml-emitter:xml-as-is "<pre>"))
               (xml-emitter:xml-out (plan-day-content day))
-              (xml-emitter:xml-as-is "</pre>]]>"))))))
+              (when *pre-wrap*
+                (xml-emitter:xml-as-is "</pre>"))
+              (xml-emitter:xml-as-is "]]>"))))))
 
 (defun toplevel()
   (parse-opts)
@@ -210,7 +220,8 @@
       *link* "https://matteolandi.net/.plan"
       *generator* (format NIL "plan-rss ~a" *version*)
       *image* "https://matteolandi.net/static/avatar-144.jpg"
-      *atom-link-self* "https://matteolandi.net/plan.xml")
+      *atom-link-self* "https://matteolandi.net/plan.xml"
+      *pre-wrap* T)
 
 #+NIL
 (defun fake-input-stream ()

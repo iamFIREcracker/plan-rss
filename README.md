@@ -3,9 +3,12 @@
 # Todo
 
 - only process N most recent entries
-- disable `<pre>` wrapping
 
 # Changelog
+
+v0.0.4 (2019-11-04)
+
+- `--disable-pre-tag-wrapping` to stop wrapping text inside `<pre>` tags
 
 v0.0.3 (2019-11-04)
 
