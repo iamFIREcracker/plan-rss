@@ -7,6 +7,8 @@
 
 # Changelog
 
+v0.0.4 (2019-11-06)
+
 - `--disable-pre-tag-wrapping` to stop wrapping text inside `<pre>` tags
 - remove support for `-m` and `-s` options (use `--image` and `--atom-self-link`
   instead)
