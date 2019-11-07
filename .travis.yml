@@ -27,7 +27,7 @@ before_install:
     fi
 
 install:
-  - curl -L https://gist.githubusercontent.com/iamFIREcracker/3564db5a24e296e087da49513d6cd00c/raw/4e356d00a98bb09c73c131c8c9db9f6fbd1cf018/roswell-install-for-ci.sh | sh
+  - ./roswell-for-ci.sh
   - |
     if [ "$TRAVIS_OS_NAME" = "windows" ]; then
       choco install make
