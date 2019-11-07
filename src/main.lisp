@@ -144,11 +144,14 @@
 (defun day-header-date (s)
   (second (split-sequence:split-sequence #\Space s)))
 
-(defun day-header-date-rfc2822 (s)
+(defun day-title-date-rfc2822 (s)
   (let* ((parts (split-sequence:split-sequence #\- s))
          (parts (mapcar #'parse-integer parts))
          (d (dt:make-date (first parts) (second parts) (third parts))))
     (dt:rfc-2822 (dt:day+ d 1))))
+
+(defmacro hexadecimal-string (seq)
+  `(format NIL "~{~(~2,'0x~)~}" (coerce ,seq 'list)))
 
 ;;; Stream --------------------------------------------------------------------
 
@@ -170,8 +173,19 @@
 (defun read-channel-description ()
   (format NIL "~{~&~A~}" (read-until-day-header)))
 
+;;; Plan-day -----------------------------------------------------------------
+
 (defstruct plan-day
   date content)
+
+(defun plan-day-title (d)
+  (day-header-date (plan-day-date d)))
+
+(defun plan-day-pub-date (d)
+  (day-title-date-rfc2822 (plan-day-title d)))
+
+(defun plan-day-guid (d)
+  (hexadecimal-string (md5:md5sum-string (plan-day-content d))))
 
 (defun read-plan-day ()
   (unless (eof-p *last-line*)
@@ -191,11 +205,11 @@
                                              ("type" "application/rss+xml")))))
     (loop
       :for day = (read-plan-day)
-      :for date = (and day (day-header-date (plan-day-date day)))
       :while day
-      :do (with-rss-item (date :link *link*
-                               :pubDate (day-header-date-rfc2822 date))
-            (xml-emitter:simple-tag "guid" (format NIL "~a#~a" *link* date)
+      :do (with-rss-item ((plan-day-title day)
+                          :link *link*
+                          :pubDate (plan-day-pub-date day))
+            (xml-emitter:simple-tag "guid" (plan-day-guid day)
                                     '(("isPermaLink" "false")))
             (xml-emitter:with-simple-tag ("description")
               (xml-emitter:xml-as-is "<![CDATA[")

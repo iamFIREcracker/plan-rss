@@ -3,9 +3,10 @@
 # Todo
 
 - only process N most recent entries
-- md5/sha256 as `<guid>` values
 
 # Changelog
+
+- Use MD5 of plan entries as content of `<guid>` tags
 
 v0.0.4 (2019-11-06)
 

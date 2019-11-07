@@ -6,7 +6,7 @@
 
   :version "0.0.4"
 
-  :depends-on (#:cl-ppcre #:simple-date-time #:split-sequence #:unix-opts #:xml-emitter)
+  :depends-on (#:cl-ppcre #:md5 #:simple-date-time #:split-sequence #:unix-opts #:xml-emitter)
 
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
