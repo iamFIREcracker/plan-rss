@@ -6,6 +6,8 @@
 
 # Changelog
 
+- Preserve empty lines
+
 v0.0.5 (2019-11-07)
 
 - Use MD5 of plan entries as content of `<guid>` tags

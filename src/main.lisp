@@ -171,7 +171,7 @@
                               (day-header-p s)))))
 
 (defun read-channel-description ()
-  (format NIL "~{~&~A~}" (read-until-day-header)))
+  (format NIL "~{~A~^~%~}" (read-until-day-header)))
 
 ;;; Plan-day -----------------------------------------------------------------
 
@@ -255,3 +255,6 @@ Occasionally I go back through the old notes and mark with a + the things I have
 Finally A/I came back online, and I was finally able to create a request for a mailing list (to use it with the other college friends).  Anyway, the request has been created, so hopefully over the following days we will hear back from them...stay tuned!
 
 "))
+
+#+NIL
+(let ((*standard-input* (fake-input-stream))) (process-input))
