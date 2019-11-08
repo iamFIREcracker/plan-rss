@@ -6,6 +6,8 @@
 
 # Changelog
 
+v0.0.6 (2019-11-08)
+
 - Preserve empty lines
 
 v0.0.5 (2019-11-07)
