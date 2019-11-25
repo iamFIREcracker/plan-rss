@@ -45,42 +45,16 @@
 
 ;;; Options -------------------------------------------------------------------
 
-(defvar *version* NIL "Application version")
-(defvar *title* NIL "Feed's <title>")
-(defvar *link* NIL "Feed's <link>")
+(defvar *atom-link-self* NIL "Feed's <atom:link rel=self>")
 (defvar *generator* NIL "Feed's <generator>")
 (defvar *image* NIL "Feed's image <url>")
-(defvar *atom-link-self* NIL "Feed's <atom:link rel=self>")
+(defvar *max-items* 20 "Maximum number of <items> to generate (default: 20)")
+(defvar *link* NIL "Feed's <link>")
 (defvar *pre-wrap* T "Wrap text in <pre> tags")
+(defvar *title* NIL "Feed's <title>")
+(defvar *version* NIL "Application version")
 
 (opts:define-opts
-  (:name :help
-         :description "print the help text and exit"
-         :short #\h
-         :long "help")
-  (:name :version
-         :description "print the version and exit"
-         :short #\v
-         :long "version")
-  (:name :title
-         :description "use TITLE as feed's <title>"
-         :required T
-         :short #\t
-         :long "title"
-         :arg-parser #'identity
-         :meta-var "TITLE")
-  (:name :link
-         :description "use LINK as feed's <link>"
-         :required T
-         :short #\l
-         :long "link"
-         :arg-parser #'identity
-         :meta-var "LINK")
-  (:name :image
-         :description "use IMAGE as feed's image <url>"
-         :long "image"
-         :arg-parser #'identity
-         :meta-var "IMAGE")
   (:name :atom-link-self
          :description "use SELF as feed's atom:link with rel=self"
          :long "atom-link-self"
@@ -88,7 +62,39 @@
          :meta-var "SELF")
   (:name :disable-pre-tag-wrapping
          :description "disable wrapping text inside <pre> tags"
-         :long "disable-pre-tag-wrapping"))
+         :long "disable-pre-tag-wrapping")
+  (:name :help
+         :description "print the help text and exit"
+         :short #\h
+         :long "help")
+  (:name :image
+         :description "use IMAGE as feed's image <url>"
+         :long "image"
+         :arg-parser #'identity
+         :meta-var "IMAGE")
+  (:name :link
+         :description "use LINK as feed's <link>"
+         :required T
+         :short #\l
+         :long "link"
+         :arg-parser #'identity
+         :meta-var "LINK")
+  (:name :max-items
+         :description "maximum number of <items> entries to generate (default: 20)"
+         :long "max-items"
+         :arg-parser #'parse-integer
+         :meta-var "ENTRIES")
+  (:name :title
+         :description "use TITLE as feed's <title>"
+         :required T
+         :short #\t
+         :long "title"
+         :arg-parser #'identity
+         :meta-var "TITLE")
+  (:name :version
+         :description "print the version and exit"
+         :short #\v
+         :long "version"))
 
 (defun parse-opts (&optional (argv (opts:argv)))
   (multiple-value-bind (options)
@@ -112,7 +118,7 @@
     (if (getf options :help)
       (progn
         (opts:describe
-          :prefix "Reads a .plan file from stdin, and prints to stdout a feed with all the parsed entries"
+          :prefix "Reads a .plan file from stdin, and prints to stdout a RSS feed with all the parsed entries"
           :args "[keywords]")
         (opts:exit)))
     (if (getf options :version)
@@ -129,7 +135,9 @@
     (if (getf options :atom-link-self)
       (setf *atom-link-self* (getf options :atom-link-self)))
     (if (getf options :disable-pre-tag-wrapping)
-      (setf *pre-wrap* NIL))))
+      (setf *pre-wrap* NIL))
+    (if (getf options :max-items)
+      (setf *max-items* (getf options :max-items)))))
 
 ;;; Utils ---------------------------------------------------------------------
 
@@ -191,6 +199,22 @@
   (unless (eof-p *last-line*)
     (make-plan-day :date *last-line* :content (read-channel-description))))
 
+(defun read-most-recent-plan-days (max-items)
+  (loop
+    :with hq
+    :for day = (read-plan-day)
+    :while day
+    :do (setf hq (merge 'list hq (list day) #'string< :key #'plan-day-title))
+    :when (> (length hq) max-items) :do (pop hq)
+    :finally (return (reverse hq))))
+
+(defun plan-day-reader (max-items)
+  (if (zerop max-items)
+    #'read-plan-day
+    (let ((items (read-most-recent-plan-days max-items)))
+      (lambda ()
+        (pop items)))))
+
 ;;; Main ----------------------------------------------------------------------
 
 (defun process-input ()
@@ -204,7 +228,8 @@
                                              ("rel" "self")
                                              ("type" "application/rss+xml")))))
     (loop
-      :for day = (read-plan-day)
+      :with reader = (plan-day-reader *max-items*)
+      :for day = (funcall reader)
       :while day
       :do (with-rss-item ((plan-day-title day)
                           :link *link*
@@ -227,13 +252,15 @@
 ;;; REPL ----------------------------------------------------------------------
 
 #+NIL
-(setf *version* "0.0.1"
-      *title* "Matteo Landi's blog"
-      *link* "https://matteolandi.net/.plan"
-      *generator* (format NIL "plan-rss ~a" *version*)
-      *image* "https://matteolandi.net/static/avatar-144.jpg"
-      *atom-link-self* "https://matteolandi.net/plan.xml"
-      *pre-wrap* T)
+(setf
+  *atom-link-self* "https://matteolandi.net/plan.xml"
+  *max-items* 20
+  *generator* (format NIL "plan-rss ~a" *version*)
+  *image* "https://matteolandi.net/static/avatar-144.jpg"
+  *link* "https://matteolandi.net/.plan"
+  *pre-wrap* T
+  *title* "Matteo Landi's blog"
+  *version* "0.0.1")
 
 #+NIL
 (defun fake-input-stream ()
