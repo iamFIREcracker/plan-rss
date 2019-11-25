@@ -90,7 +90,16 @@
          :description "disable wrapping text inside <pre> tags"
          :long "disable-pre-tag-wrapping"))
 
-(defun parse-opts (&optional (argv (opts:argv)))
+(define-condition exit (error)
+  ((code
+     :initarg :code
+     :initform 0
+     :reader exit-code))
+  (:report (lambda (condition stream)
+             (format stream "Trying to exit with code: ~S"
+                     (exit-code condition)))))
+
+(defun parse-opts (argv)
   (multiple-value-bind (options)
       (handler-case
           (handler-bind ((opts:missing-required-option (lambda (condition)
@@ -101,24 +110,24 @@
                                                            (invoke-restart 'opts:skip-option)
                                                            (progn
                                                              (format t "~a~%" condition)
-                                                             (opts:exit 1))))))
+                                                             (error 'exit :code 1))))))
             (opts:get-opts argv))
         (opts:unknown-option (condition)
           (format t "~a~%" condition)
-          (opts:exit 1))
+          (error 'exit :code 1))
         (opts:missing-arg (condition)
           (format t "~a~%" condition)
-          (opts:exit 1)))
+          (error 'exit :code 1)))
     (if (getf options :help)
       (progn
         (opts:describe
           :prefix "Reads a .plan file from stdin, and prints to stdout a feed with all the parsed entries"
           :args "[keywords]")
-        (opts:exit)))
+        (error 'exit)))
     (if (getf options :version)
       (progn
         (format T "~a~%" *version*)
-        (opts:exit)))
+        (error 'exit)))
     ; required arguments
     (setf *title* (getf options :title)
           *link* (getf options :link)
@@ -221,7 +230,9 @@
               (xml-emitter:xml-as-is "]]>"))))))
 
 (defun toplevel()
-  (parse-opts)
+  (handler-case (parse-opts (opts:argv))
+    (exit (condition)
+      (opts:exit (exit-code condition))))
   (process-input))
 
 ;;; REPL ----------------------------------------------------------------------
