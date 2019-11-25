@@ -48,7 +48,7 @@
 (defvar *atom-link-self* NIL "Feed's <atom:link rel=self>")
 (defvar *generator* NIL "Feed's <generator>")
 (defvar *image* NIL "Feed's image <url>")
-(defvar *max-items* 20 "Maximum number of <items> to generate (default: 20)")
+(defvar *max-items* 20 "Maximum number of <item>s to generate")
 (defvar *link* NIL "Feed's <link>")
 (defvar *pre-wrap* T "Wrap text in <pre> tags")
 (defvar *title* NIL "Feed's <title>")
@@ -80,7 +80,7 @@
          :arg-parser #'identity
          :meta-var "LINK")
   (:name :max-items
-         :description "maximum number of <items> entries to generate (default: 20)"
+         :description "maximum number of <item>s entries to generate (defaults to 20, and can be set to 0 to generate <item>s for all entries)"
          :long "max-items"
          :arg-parser #'parse-integer
          :meta-var "ENTRIES")
