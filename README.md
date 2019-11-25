@@ -1,10 +1,11 @@
 # plan-rss
 
-# Todo
-
-- only process N most recent entries
-
 # Changelog
+
+unreleased:
+
+- `--max-items` limit the number of generated `<item>`s.  It defaults to 20, and
+  can be set to 0 to force it to generate `<item>`s for all entries
 
 v0.0.6 (2019-11-08)
 
@@ -36,7 +37,7 @@ v0.0.1 (2019-11-03)
 
     > plan-rss --help
     Reads a .plan file from stdin, and prints to stdout a feed with all the parsed entries
-
+    
     Available options:
       -h, --help               print the help text and exit
       -v, --version            print the version and exit
