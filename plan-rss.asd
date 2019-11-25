@@ -4,7 +4,7 @@
   :author "Matteo Landi <matteo@matteolandi.net>"
   :license  "MIT"
 
-  :version "0.0.6"
+  :version "0.0.7"
 
   :depends-on (#:cl-ppcre #:md5 #:simple-date-time #:split-sequence #:unix-opts #:xml-emitter)
 
