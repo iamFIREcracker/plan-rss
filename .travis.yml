@@ -16,7 +16,7 @@ jobs:
         - DEST=plan-rss-linux
     - os: osx
       env:
-        - LISP=sbcl/1.5.8
+        - LISP=sbcl/2.0.0
         - DEST=plan-rss-osx
     - os: windows
       language: shell
