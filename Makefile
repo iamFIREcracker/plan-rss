@@ -1,4 +1,4 @@
-.PHONY: vendor clean binary-sbcl binary install
+.PHONY: clean binary-sbcl binary install
 
 PREFIX?=/usr/local
 lisps := $(shell find .  -type f \( -iname \*.asd -o -iname \*.lisp \))
