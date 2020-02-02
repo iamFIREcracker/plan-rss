@@ -1,48 +1,5 @@
 (in-package #:plan-rss)
 
-;;; Vendor --------------------------------------------------------------------
-
-
-(defmacro with-rss-channel-header ((title link &key description
-                                          (generator "xml-emitter")
-                                          (language "en-us")
-                                          image image-title image-link)
-                                   &body body)
-  `(progn
-     (xml-emitter:emit-simple-tags :title ,title
-                                   :link ,link
-                                   :description ,description
-                                   :generator ,generator
-                                   :language ,language)
-     (when ,image
-       (xml-emitter:with-tag ("image")
-         (xml-emitter:emit-simple-tags :title (or ,image-title ,title)
-                                       :url ,image
-                                       :link (or ,image-link ,link))))
-     ,@body))
-
-(defmacro with-rss-item ((title &key link description author category
-                                comments guid pubDate source)
-                         &body body)
-  `(xml-emitter:with-tag ("item")
-     (xml-emitter:emit-simple-tags :title ,title
-                                   :link ,link
-                                   :description ,description
-                                   :author ,author
-                                   :category ,category
-                                   :comments ,comments
-                                   :guid ,guid
-                                   "pubDate" ,pubDate
-                                   :source ,source)
-     ,@body))
-
-(defmacro with-rss2 ((stream &key (encoding "ISO-8859-1") (attrs '(("version" "2.0")))) &body body)
-  `(xml-emitter:with-xml-output (,stream :encoding ,encoding)
-     (xml-emitter:with-tag ("rss" ,attrs)
-       (xml-emitter:with-tag ("channel")
-         ,@body))))
-
-
 ;;; Options -------------------------------------------------------------------
 
 (defvar *atom-link-self* NIL "Feed's <atom:link rel=self>")
@@ -227,11 +184,11 @@
 ;;; Main ----------------------------------------------------------------------
 
 (defun process-input ()
-  (with-rss2 (*standard-output* :encoding "utf-8" :attrs '(("xmlns:atom" "http://www.w3.org/2005/Atom")
-                                                           ("version" "2.0")))
-    (with-rss-channel-header (*title* *link* :description (read-channel-description)
-                                      :generator *generator*
-                                      :image *image*)
+  (xml-emitter:with-rss2 (*standard-output* :encoding "utf-8" :attrs '(("xmlns:atom" "http://www.w3.org/2005/Atom")
+                                                                       ("version" "2.0")))
+    (xml-emitter:with-rss-channel-header (*title* *link* :description (read-channel-description)
+                                                         :generator *generator*
+                                                         :image *image*)
       (when *atom-link-self*
         (xml-emitter:empty-tag "atom:link" `(("href" ,*atom-link-self*)
                                              ("rel" "self")
@@ -240,9 +197,9 @@
       :with reader = (plan-day-reader *max-items*)
       :for day = (funcall reader)
       :while day
-      :do (with-rss-item ((plan-day-title day)
-                          :link *link*
-                          :pubDate (plan-day-pub-date day))
+      :do (xml-emitter:with-rss-item ((plan-day-title day)
+                                      :link *link*
+                                      :pubDate (plan-day-pub-date day))
             (xml-emitter:simple-tag "guid" (plan-day-guid day)
                                     '(("isPermaLink" "false")))
             (xml-emitter:with-simple-tag ("description")
