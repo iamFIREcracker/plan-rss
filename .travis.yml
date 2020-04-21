@@ -42,7 +42,7 @@ deploy:
   provider: releases
   token:
     secure: V5woEUHe2TN6pVMMWLcSWfdTn79cNoG2wtT8qChw/pV9+KAUcXNyXFPchqlnGaoWPNoMMdwehcTCJJz7MISnWO6DlepTf4KIpa42zOw6e1rwrHQ0yCGNT5KJrbfZznoYxU6M3qYXADhQKd4qft0haHiRQPUMYiTr+Qj/p1rfmCVtM+eK8yK/ASEH8yMJBhBLF/MHySLiM+zjm7LgGKtL6jT6vdcFFGH76zCaQgCunW1RXRO6If94PyGEUT13baL7tLqJntIfaQAOpozsO1NT2X8zzkekwyiuPdVZ9wQbHOsrh9bnf4PSMYcNUpmPOmNvn8rWxemsViEzd7wJTV0hL0xh2Rw/RWEbjpmiAYDFvAzeJxizk7fEExmHmjgOLJ8hY3RfpjyZronQDGwNjK47+Kw5AqA/If5xd72GMlFimm24MQmvatAEzT5aR/AteQXu2/lfcT/HxuczpQatugZNYxy1yGkKFyLSeItlhNoqWvMzNV5wh+oZCL+2wc+2vgeYEzZpuwHAfDFgerBrPljGmfjdr7ITx00QhTTUwbSXM/WqV7AVnFjobXvpMfZWCCoeEUp0IzaIR5v07+xe1qUdGxSBcR2AZJbMOFLecOm9tMxyCuEgHWscIhcQdaYVkXYqiuwj8YPHLEArRIK8eY0jsXRFmGzF435jg5Qpp63kbpc=
-  cleanup: false
+  skip_cleanup: true
   file: bin/$DEST
   on:
     repo: iamFIREcracker/plan-rss
