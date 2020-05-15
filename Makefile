@@ -14,10 +14,10 @@ bin:
 	mkdir -p bin
 
 binary-sbcl: bin $(lisps)
-	sbcl --noinform --load "src/build.lisp"
+	sbcl --noinform --load "build.lisp"
 
 binary-ros: bin $(lisps)
-	ros run -- --noinform --load "src/build.lisp"
+	ros run -- --noinform --load "build.lisp"
 
 binary: binary-sbcl
 

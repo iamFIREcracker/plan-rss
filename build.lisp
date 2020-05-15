@@ -1,3 +1,5 @@
+(format t "~a/~a~&" (lisp-implementation-type) (lisp-implementation-version))
+
 (ql:quickload :deploy :silent T)
 
 ;; By adding the current directory to ql:*local-project-directories*, we can
@@ -18,6 +20,7 @@
                              (format NIL "~a-r~a" base-version pending))))
 
 (setf deploy:*status-output* nil)
+(pushnew :deploy-console *features*)
 
 (let ((deploy:*status-output* t))
   (asdf:make :plan-rss :force t))
