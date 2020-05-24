@@ -13,45 +13,45 @@
 
 (opts:define-opts
   (:name :atom-link-self
-         :description "use SELF as feed's atom:link with rel=self"
-         :long "atom-link-self"
-         :arg-parser #'identity
-         :meta-var "SELF")
+   :description "use SELF as feed's atom:link with rel=self"
+   :long "atom-link-self"
+   :arg-parser #'identity
+   :meta-var "SELF")
   (:name :disable-pre-tag-wrapping
-         :description "disable wrapping text inside <pre> tags"
-         :long "disable-pre-tag-wrapping")
+   :description "disable wrapping text inside <pre> tags"
+   :long "disable-pre-tag-wrapping")
   (:name :help
-         :description "print the help text and exit"
-         :short #\h
-         :long "help")
+   :description "print the help text and exit"
+   :short #\h
+   :long "help")
   (:name :image
-         :description "use IMAGE as feed's image <url>"
-         :long "image"
-         :arg-parser #'identity
-         :meta-var "IMAGE")
+   :description "use IMAGE as feed's image <url>"
+   :long "image"
+   :arg-parser #'identity
+   :meta-var "IMAGE")
   (:name :link
-         :description "use LINK as feed's <link>"
-         :required T
-         :short #\l
-         :long "link"
-         :arg-parser #'identity
-         :meta-var "LINK")
+   :description "use LINK as feed's <link>"
+   :required T
+   :short #\l
+   :long "link"
+   :arg-parser #'identity
+   :meta-var "LINK")
   (:name :max-items
-         :description "maximum number of <item>s entries to generate (defaults to 20, and can be set to 0 to generate <item>s for all entries)"
-         :long "max-items"
-         :arg-parser #'parse-integer
-         :meta-var "ENTRIES")
+   :description "maximum number of <item>s entries to generate (defaults to 20, and can be set to 0 to generate <item>s for all entries)"
+   :long "max-items"
+   :arg-parser #'parse-integer
+   :meta-var "ENTRIES")
   (:name :title
-         :description "use TITLE as feed's <title>"
-         :required T
-         :short #\t
-         :long "title"
-         :arg-parser #'identity
-         :meta-var "TITLE")
+   :description "use TITLE as feed's <title>"
+   :required T
+   :short #\t
+   :long "title"
+   :arg-parser #'identity
+   :meta-var "TITLE")
   (:name :version
-         :description "print the version and exit"
-         :short #\v
-         :long "version"))
+   :description "print the version and exit"
+   :short #\v
+   :long "version"))
 
 (define-condition exit (error)
   ((code
@@ -186,9 +186,10 @@
 (defun process-input ()
   (xml-emitter:with-rss2 (*standard-output* :encoding "utf-8" :attrs '(("xmlns:atom" "http://www.w3.org/2005/Atom")
                                                                        ("version" "2.0")))
-    (xml-emitter:with-rss-channel-header (*title* *link* :description (read-channel-description)
-                                                         :generator *generator*
-                                                         :image *image*)
+    (xml-emitter:with-rss-channel-header (*title* *link*
+                                                  :description (read-channel-description)
+                                                  :generator *generator*
+                                                  :image *image*)
       (when *atom-link-self*
         (xml-emitter:empty-tag "atom:link" `(("href" ,*atom-link-self*)
                                              ("rel" "self")

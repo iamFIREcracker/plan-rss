@@ -1,3 +1,5 @@
-with-rss2
-with-rss-channgel-header
-with-rss-item
+(1 with-rss2)
+(1 with-rss-channel-header)
+(1 with-simple-tag)
+(1 with-rss-item)
+(1 exit)
